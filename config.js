@@ -16,26 +16,22 @@
 // ══════════════════════════════════════════════════════
 //  🌿 TOTORO THEME — EmailJS credentials
 // ══════════════════════════════════════════════════════
-const TOTORO_SERVICE_ID  = 'service_4z99scc';      // ← your EmailJS Service ID
-const TOTORO_TEMPLATE_ID = 'template_c1os7hd';     // ← Totoro email template ID
-const TOTORO_PUBLIC_KEY  = 'koN-S1d-PVXq9wTOm';   // ← your EmailJS Public Key
+const TOTORO_SERVICE_ID  = 'service_4z99scc';
+const TOTORO_TEMPLATE_ID = 'template_c1os7hd';
+const TOTORO_PUBLIC_KEY  = 'koN-S1d-PVXq9wTOm';
 const TOTORO_FROM_NAME   = 'Totoro Photobooth';
 const TOTORO_SUBJECT     = 'Happy 9th Monthsary Haki! I LOVE YOUUU SO MUCHH 🌿';
 
 // ══════════════════════════════════════════════════════
 //  ☕ FRIENDS THEME — EmailJS credentials
-//  Create a SEPARATE template in EmailJS for Friends
+//  Only TEMPLATE_ID needs to be different.
+//  Paste your Friends template ID below when ready.
 // ══════════════════════════════════════════════════════
-const FRIENDS_SERVICE_ID  = 'service_4z99scc';     // ← same service ID is fine
-const FRIENDS_TEMPLATE_ID = '';                     // ← paste Friends template ID here e.g. 'template_xxxxxxx'
-const FRIENDS_PUBLIC_KEY  = 'koN-S1d-PVXq9wTOm';  // ← same public key is fine
+const FRIENDS_SERVICE_ID  = 'service_4z99scc';
+const FRIENDS_TEMPLATE_ID = '';               // ← paste e.g. 'template_xxxxxxx'
+const FRIENDS_PUBLIC_KEY  = 'koN-S1d-PVXq9wTOm';
 const FRIENDS_FROM_NAME   = 'Central Perk Booth';
 const FRIENDS_SUBJECT     = 'Your Central Perk Booth Memories ☕';
-
-// ══════════════════════════════════════════════════════
-//  Shared public key (same for both themes)
-// ══════════════════════════════════════════════════════
-const EMAILJS_PUBLIC_KEY = TOTORO_PUBLIC_KEY;
 
 // ─────────────────────────────────────────────────────
 
@@ -44,7 +40,6 @@ const SESSIONS_KEY  = 'totoro_sessions';
 const TEMPLATES_KEY = 'totoro_templates';
 
 const DEFAULT_CONFIG = {
-  // Background
   bgType:    'color',
   bgColor:   '#4e6e50',
   gradStart: '#3d5a40',
@@ -53,18 +48,15 @@ const DEFAULT_CONFIG = {
   bgImage:   null,
   bgFit:     'cover',
   bgOpacity: 1,
-  // Strip layout
   stripPad:   12,
   photoGap:   8,
   borderRad:  4,
-  // Branding
   brandName:    '🌿 Totoro Booth',
   brandTagline: '',
   brandColor:   '#ffffff',
   brandFont:    16,
   showDate:     true,
   logoImage:    null,
-  // Email — Totoro defaults
   ejsServiceId:  TOTORO_SERVICE_ID,
   ejsTemplateId: TOTORO_TEMPLATE_ID,
   ejsPublicKey:  TOTORO_PUBLIC_KEY,
@@ -72,27 +64,36 @@ const DEFAULT_CONFIG = {
   ejsSubject:    TOTORO_SUBJECT,
 };
 
-// Per-theme email config lookup
-const THEME_EMAIL_CONFIG = {
-  totoro: {
-    ejsServiceId:  TOTORO_SERVICE_ID,
-    ejsTemplateId: TOTORO_TEMPLATE_ID,
-    ejsPublicKey:  TOTORO_PUBLIC_KEY,
-    ejsFromName:   TOTORO_FROM_NAME,
-    ejsSubject:    TOTORO_SUBJECT,
-  },
-  friends: {
-    ejsServiceId:  FRIENDS_SERVICE_ID,
-    ejsTemplateId: FRIENDS_TEMPLATE_ID,
-    ejsPublicKey:  FRIENDS_PUBLIC_KEY,
-    ejsFromName:   FRIENDS_FROM_NAME,
-    ejsSubject:    FRIENDS_SUBJECT,
-  }
-};
-
-// Returns email config for the currently active theme
+// ── Per-theme email config ────────────────────────────
+// getEmailConfigForTheme() is called by app.js sendEmail()
+// It ALWAYS returns the hardcoded values as priority —
+// localStorage admin overrides are merged on top if present.
 function getEmailConfigForTheme(themeName) {
-  return THEME_EMAIL_CONFIG[themeName] || THEME_EMAIL_CONFIG.totoro;
+  if (themeName === 'friends') {
+    return {
+      ejsServiceId:  localStorage.getItem('ejs_friends_service')  || FRIENDS_SERVICE_ID,
+      ejsTemplateId: localStorage.getItem('ejs_friends_template') || FRIENDS_TEMPLATE_ID,
+      ejsPublicKey:  localStorage.getItem('ejs_friends_pubkey')   || FRIENDS_PUBLIC_KEY,
+      ejsFromName:   localStorage.getItem('ejs_friends_from')     || FRIENDS_FROM_NAME,
+      ejsSubject:    localStorage.getItem('ejs_friends_subject')  || FRIENDS_SUBJECT,
+    };
+  }
+  // Default: totoro
+  return {
+    ejsServiceId:  localStorage.getItem('ejs_totoro_service')  || TOTORO_SERVICE_ID,
+    ejsTemplateId: localStorage.getItem('ejs_totoro_template') || TOTORO_TEMPLATE_ID,
+    ejsPublicKey:  localStorage.getItem('ejs_totoro_pubkey')   || TOTORO_PUBLIC_KEY,
+    ejsFromName:   localStorage.getItem('ejs_totoro_from')     || TOTORO_FROM_NAME,
+    ejsSubject:    localStorage.getItem('ejs_totoro_subject')  || TOTORO_SUBJECT,
+  };
+}
+
+// isEmailConfigured() — used by initEmail() to decide
+// whether to show the quick-config panel or hide it.
+// Returns true if ALL three required fields are filled.
+function isEmailConfigured(themeName) {
+  const c = getEmailConfigForTheme(themeName);
+  return !!(c.ejsServiceId && c.ejsTemplateId && c.ejsPublicKey);
 }
 
 function loadConfig() {
@@ -101,7 +102,7 @@ function loadConfig() {
     const saved  = raw ? JSON.parse(raw) : {};
     const merged = Object.assign({}, DEFAULT_CONFIG, saved);
 
-    // Always hard-code fallback credentials (never rely on empty localStorage)
+    // Always enforce hardcoded Totoro credentials as fallback
     if (!merged.ejsServiceId)  merged.ejsServiceId  = TOTORO_SERVICE_ID;
     if (!merged.ejsTemplateId) merged.ejsTemplateId = TOTORO_TEMPLATE_ID;
     if (!merged.ejsPublicKey)  merged.ejsPublicKey  = TOTORO_PUBLIC_KEY;
