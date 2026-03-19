@@ -151,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('booth_theme') || 'totoro';
   applyTheme(savedTheme);
 
-  await enumerateCameras();
   renderStripMini();
 });
 
@@ -183,10 +182,31 @@ function selectLayout(btn, layout) {
   state.clips       = [];
 }
 
-// ── CAMERA ENUMERATE ─────────────────────────────────
+// ── DEVICE DETECTION ─────────────────────────────────
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+    || (navigator.maxTouchPoints > 1 && !/Win|Mac/i.test(navigator.platform));
+}
+
+// ── CAMERA ───────────────────────────────────────────
+function setFacing(mode, btn) {
+  state.facingMode = mode;
+  state.deviceId   = null; // clear any laptop deviceId when flipping
+  document.querySelectorAll('#btnFront,#btnBack').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  startCameraOnElement('setupVideo', 'setup');
+}
+
+function onCameraChange() {
+  const sel = document.getElementById('cameraSelect');
+  if (sel) state.deviceId = sel.value || null;
+  startCameraOnElement('setupVideo', 'setup');
+}
+
 async function enumerateCameras() {
   try {
-    const tmp = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+    // Need a quick stream first so browser reveals device labels
+    const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     tmp.getTracks().forEach(t => t.stop());
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras = devices.filter(d => d.kind === 'videoinput');
@@ -195,7 +215,7 @@ async function enumerateCameras() {
     sel.innerHTML = '';
     cameras.forEach((cam, i) => {
       const opt = document.createElement('option');
-      opt.value = cam.deviceId;
+      opt.value       = cam.deviceId;
       opt.textContent = cam.label || `Camera ${i + 1}`;
       sel.appendChild(opt);
     });
@@ -203,26 +223,26 @@ async function enumerateCameras() {
   } catch(e) { console.warn('Camera enumerate failed:', e); }
 }
 
-function onCameraChange() {
-  const sel = document.getElementById('cameraSelect');
-  if (sel) state.deviceId = sel.value;
-  startCameraOnElement('setupVideo', 'setup');
-}
-
-function setFacing(mode, btn) {
-  state.facingMode = mode;
-  document.querySelectorAll('#btnFront,#btnBack').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  startCameraOnElement('setupVideo', 'setup');
-}
-
-// ── CAMERA START ─────────────────────────────────────
 async function startCameraOnElement(videoId, streamKey) {
   stopStream(streamKey);
-  const constraints = {
-    video: { facingMode: state.facingMode, deviceId: state.deviceId ? { exact: state.deviceId } : undefined, width: { ideal: 1280 }, height: { ideal: 960 } },
-    audio: true
-  };
+
+  let constraints;
+  if (isMobileDevice()) {
+    // Mobile: use facingMode only — simple and reliable
+    constraints = {
+      video: { facingMode: state.facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: true
+    };
+  } else {
+    // Laptop/desktop: use selected deviceId if available
+    constraints = {
+      video: state.deviceId
+        ? { deviceId: { exact: state.deviceId }, width: { ideal: 1280 }, height: { ideal: 960 } }
+        : { width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: true
+    };
+  }
+
   try {
     const s = await navigator.mediaDevices.getUserMedia(constraints);
     const vid = document.getElementById(videoId);
@@ -230,13 +250,20 @@ async function startCameraOnElement(videoId, streamKey) {
     state[streamKey + 'Stream'] = s;
     return s;
   } catch(e) {
+    // Fallback: try without dimensions
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: state.facingMode }, audio: true });
+      const fallback = isMobileDevice()
+        ? { video: { facingMode: state.facingMode }, audio: true }
+        : { video: true, audio: true };
+      const s = await navigator.mediaDevices.getUserMedia(fallback);
       const vid = document.getElementById(videoId);
       if (vid) { vid.srcObject = s; vid.muted = true; }
       state[streamKey + 'Stream'] = s;
       return s;
-    } catch(e2) { console.warn('Camera start failed:', e2); return null; }
+    } catch(e2) {
+      console.warn('Camera failed:', e2);
+      return null;
+    }
   }
 }
 
@@ -247,9 +274,21 @@ function stopStream(key) {
 
 // ── CAMERA SETUP ──────────────────────────────────────
 async function initCameraSetup() {
-  await enumerateCameras();
-  const sel = document.getElementById('cameraSelect');
-  if (sel && state.deviceId) sel.value = state.deviceId;
+  const mobile = isMobileDevice();
+
+  // Show the right control section
+  const sourceSection = document.getElementById('cameraSourceSection');
+  const facingSection = document.getElementById('cameraFacingSection');
+  if (sourceSection) sourceSection.style.display = mobile ? 'none' : 'block';
+  if (facingSection) facingSection.style.display = mobile ? 'block' : 'none';
+
+  if (!mobile) {
+    // Laptop: enumerate cameras and populate dropdown
+    await enumerateCameras();
+    const sel = document.getElementById('cameraSelect');
+    if (sel && state.deviceId) sel.value = state.deviceId;
+  }
+
   startCameraOnElement('setupVideo', 'setup');
 }
 
