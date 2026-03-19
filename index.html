@@ -69,15 +69,17 @@
         <div class="phase-step">1 / 5</div>
       </div>
 
-      <div class="setup-section">
+      <!-- Camera Source — shown only on laptops/desktops -->
+      <div class="setup-section" id="cameraSourceSection" style="display:none">
         <div class="setup-label">Camera Source</div>
         <select id="cameraSelect" class="styled-select" onchange="onCameraChange()">
           <option value="">Detecting cameras…</option>
         </select>
       </div>
 
-      <div class="setup-section">
-        <div class="setup-label">Facing Mode</div>
+      <!-- Facing mode — shown only on mobile -->
+      <div class="setup-section" id="cameraFacingSection" style="display:none">
+        <div class="setup-label">Camera</div>
         <div class="toggle-row">
           <button class="toggle-btn active" id="btnFront" onclick="setFacing('user',this)">🤳 Front / Selfie</button>
           <button class="toggle-btn" id="btnBack" onclick="setFacing('environment',this)">📷 Back / Rear</button>
@@ -210,8 +212,9 @@
 
       <!-- Quick EmailJS config — shown only when not yet configured -->
       <div id="quickConfigPanel" class="quick-config-panel" style="display:none">
-        <div class="qc-title">⚙️ One-time EmailJS Setup</div>
-        <p class="qc-desc">Get your free credentials at <a href="https://emailjs.com" target="_blank">emailjs.com</a> — connect Gmail, fill in below.</p>
+        <div class="qc-title" id="quickConfigTitle">⚙️ One-time EmailJS Setup</div>
+        <p class="qc-desc">Get your free credentials at <a href="https://emailjs.com" target="_blank">emailjs.com</a> — connect Gmail, fill in below.<br/>
+        <strong>Note:</strong> Each theme needs its own EmailJS Template ID. Service ID and Public Key can be the same.</p>
         <div class="form-group">
           <label class="form-label">Service ID <span class="qc-hint">e.g. service_abc123</span></label>
           <input type="text" id="qcServiceId" class="styled-input" placeholder="service_xxxxxxx"/>
