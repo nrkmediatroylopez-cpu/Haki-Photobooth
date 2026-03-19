@@ -388,12 +388,7 @@ async function renderStripMini() {
   wrap.innerHTML = '';
   const canvas = document.createElement('canvas');
   wrap.appendChild(canvas);
-  const cfg = Object.assign({}, window.BOOTH_CONFIG || loadConfig());
-  const t = THEMES[currentTheme];
-  cfg.bgColor    = t.stripBg;
-  cfg.brandName  = t.brandName;
-  cfg.brandColor = t.stripColor;
-  await renderStrip(state.photos, state.layout, 'none', cfg, canvas);
+  await renderStrip(state.photos, state.layout, 'none', getThemedConfig(), canvas);
   canvas.style.width = '100%'; canvas.style.height = 'auto'; canvas.style.borderRadius = '8px';
 }
 
@@ -508,11 +503,22 @@ async function initFinalize() {
 }
 
 function getThemedConfig() {
-  const cfg = Object.assign({}, window.BOOTH_CONFIG || loadConfig());
-  const t   = THEMES[currentTheme];
-  cfg.bgColor    = t.stripBg;
-  cfg.brandName  = t.brandName;
-  cfg.brandColor = t.stripColor;
+  // Load the correct per-theme admin config from localStorage
+  const themeKey = currentTheme === 'friends' ? 'friends_config' : 'totoro_config';
+  let cfg;
+  try {
+    const raw = localStorage.getItem(themeKey);
+    cfg = raw ? Object.assign({}, loadConfig(), JSON.parse(raw)) : Object.assign({}, loadConfig());
+  } catch(e) {
+    cfg = Object.assign({}, loadConfig());
+  }
+
+  // Apply theme identity defaults (only if not overridden in admin)
+  const t = THEMES[currentTheme];
+  if (!cfg.bgColor || cfg.bgColor === '#4e6e50') cfg.bgColor = t.stripBg;
+  if (!cfg.brandName || cfg.brandName === '🌿 Totoro Booth') cfg.brandName = t.brandName;
+  if (!cfg.brandColor) cfg.brandColor = t.stripColor;
+
   return cfg;
 }
 
