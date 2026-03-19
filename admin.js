@@ -87,10 +87,17 @@ function loadThemeConfig(name) {
 }
 
 function saveThemeConfig(name, cfg) {
+  // Always save under the theme-specific key
   const key = THEME_CONFIG_KEYS[name] || THEME_CONFIG_KEYS.totoro;
   try { localStorage.setItem(key, JSON.stringify(cfg)); } catch(e) {}
-  // Also save to main config key if this is the active theme
-  if (name === 'totoro') saveConfig(cfg);
+  // Also sync to main config key for Totoro (fallback compatibility)
+  if (name === 'totoro') {
+    try { localStorage.setItem('totoro_config', JSON.stringify(cfg)); } catch(e) {}
+  }
+  // Friends config goes into friends_config key
+  if (name === 'friends') {
+    try { localStorage.setItem('friends_config', JSON.stringify(cfg)); } catch(e) {}
+  }
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────
@@ -263,9 +270,17 @@ function updatePreview() {
 
 // ── SAVE ──────────────────────────────────────────────
 function saveAdminConfig() {
+  // Save under the correct theme key
   saveThemeConfig(activeAdminTheme, adminCfg);
-  window.BOOTH_CONFIG = adminCfg;
+
+  // Also update the global BOOTH_CONFIG if this is the active booth theme
+  const boothTheme = localStorage.getItem('booth_theme') || 'totoro';
+  if (activeAdminTheme === boothTheme) {
+    window.BOOTH_CONFIG = Object.assign({}, adminCfg);
+  }
+
   showToast(`✅ ${THEME_META[activeAdminTheme].icon} ${activeAdminTheme === 'friends' ? 'Friends' : 'Totoro'} theme saved!`);
+  updatePreview();
 }
 
 function saveEmailConfig() {
