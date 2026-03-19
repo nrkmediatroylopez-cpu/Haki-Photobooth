@@ -462,30 +462,82 @@ async function downloadFinalStrip() {
 
 // ── PHASE: EMAIL ──────────────────────────────────────
 async function initEmail() {
+  // Reload config fresh each time (picks up hardcoded values)
+  window.BOOTH_CONFIG = loadConfig();
+  const cfg = window.BOOTH_CONFIG;
+
+  // ── RESET email UI state every time we enter this phase ──
+  const sendBtn = document.getElementById('sendEmailBtn');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send ✉️';
+  }
+  const emailInput = document.getElementById('emailInput');
+  if (emailInput) emailInput.value = '';
+  const statusBox = document.getElementById('emailStatusBox');
+  if (statusBox) { statusBox.style.display = 'none'; statusBox.textContent = ''; }
+
   // Thumb
   const thumbRow = document.getElementById('emailThumbRow');
   if (thumbRow) {
     thumbRow.innerHTML = '';
     const miniCanvas = document.createElement('canvas');
     thumbRow.appendChild(miniCanvas);
-    await renderStrip(state.photos, state.layout, state.filter, window.BOOTH_CONFIG, miniCanvas);
+    await renderStrip(state.photos, state.layout, state.filter, cfg, miniCanvas);
     miniCanvas.style.width  = '140px';
     miniCanvas.style.height = 'auto';
     miniCanvas.style.borderRadius = '6px';
     miniCanvas.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
   }
+
+  // Show quick-config panel if EmailJS not set up
+  const qc = document.getElementById('quickConfigPanel');
+  if (qc) {
+    const isConfigured = cfg.ejsServiceId && cfg.ejsTemplateId && cfg.ejsPublicKey;
+    qc.style.display = isConfigured ? 'none' : 'block';
+    if (!isConfigured) {
+      setInputVal('qcServiceId',  cfg.ejsServiceId  || '');
+      setInputVal('qcTemplateId', cfg.ejsTemplateId || '');
+      setInputVal('qcPublicKey',  cfg.ejsPublicKey  || '');
+    }
+  }
 }
 
+function saveQuickConfig() {
+  const svc = document.getElementById('qcServiceId')?.value.trim();
+  const tpl = document.getElementById('qcTemplateId')?.value.trim();
+  const key = document.getElementById('qcPublicKey')?.value.trim();
+  if (!svc || !tpl || !key) {
+    showEmailStatus('⚠️ Please fill in all three EmailJS fields.', 'warn');
+    return;
+  }
+  const cfg = window.BOOTH_CONFIG;
+  cfg.ejsServiceId  = svc;
+  cfg.ejsTemplateId = tpl;
+  cfg.ejsPublicKey  = key;
+  saveConfig(cfg);
+  window.BOOTH_CONFIG = cfg;
+  document.getElementById('quickConfigPanel').style.display = 'none';
+  showEmailStatus('✅ EmailJS saved! You can now send the email.', 'success');
+}
+
+function setInputVal(id, val) { const el = document.getElementById(id); if (el) el.value = val; }
+
 async function sendEmail() {
+  // Reload config to catch any just-saved quick config
+  window.BOOTH_CONFIG = loadConfig();
+  const cfg = window.BOOTH_CONFIG;
+
   const emailAddr = document.getElementById('emailInput').value.trim();
   if (!emailAddr || !isValidEmail(emailAddr)) {
     showEmailStatus('⚠️ Please enter a valid email address.', 'warn');
     return;
   }
 
-  const cfg = window.BOOTH_CONFIG;
   if (!cfg.ejsServiceId || !cfg.ejsTemplateId || !cfg.ejsPublicKey) {
-    showEmailStatus('⚠️ Email not configured. Ask the booth admin to set up EmailJS in the Admin Panel.', 'warn');
+    showEmailStatus('⚠️ EmailJS not configured. Fill in the fields above first.', 'warn');
+    const qc = document.getElementById('quickConfigPanel');
+    if (qc) qc.style.display = 'block';
     return;
   }
 
@@ -494,20 +546,20 @@ async function sendEmail() {
   sendBtn.textContent = 'Sending…';
   showEmailStatus('📤 Sending your memories…', 'info');
 
- const canvas = document.createElement('canvas');
-await renderStrip(state.photos, state.layout, state.filter, cfg, canvas);
+  // Get strip image as base64 — compressed to stay under EmailJS 50KB limit
+  const canvas = document.createElement('canvas');
+  await renderStrip(state.photos, state.layout, state.filter, cfg, canvas);
 
-// Compress + shrink to fit EmailJS 50KB limit
-const smallCanvas = document.createElement('canvas');
-const maxW = 400;
-const scale = maxW / canvas.width;
-smallCanvas.width  = maxW;
-smallCanvas.height = Math.round(canvas.height * scale);
-const sctx = smallCanvas.getContext('2d');
-sctx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
-const stripBase64 = smallCanvas.toDataURL('image/jpeg', 0.45);
+  const smallCanvas = document.createElement('canvas');
+  const maxW = 400;
+  const scale = maxW / canvas.width;
+  smallCanvas.width  = maxW;
+  smallCanvas.height = Math.round(canvas.height * scale);
+  const sctx = smallCanvas.getContext('2d');
+  sctx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+  const stripBase64 = smallCanvas.toDataURL('image/jpeg', 0.45);
 
-  // Load emailjs
+  // Load emailjs SDK
   await loadEmailJS();
 
   try {
@@ -521,15 +573,16 @@ const stripBase64 = smallCanvas.toDataURL('image/jpeg', 0.45);
     });
 
     if (result.status === 200) {
-      showEmailStatus('✅ Sent! Check your inbox.', 'success');
-      setTimeout(() => goPhase('done'), 1500);
+      showEmailStatus('✅ Sent! Check your inbox 🌿', 'success');
+      setTimeout(() => goPhase('done'), 1800);
     } else {
-      showEmailStatus('❌ Send failed. Check email config.', 'error');
+      showEmailStatus('❌ Send failed. Double-check your EmailJS credentials.', 'error');
       sendBtn.disabled = false;
       sendBtn.textContent = 'Retry ✉️';
     }
   } catch(e) {
-    showEmailStatus(`❌ Error: ${e.message || 'Email send failed'}`, 'error');
+    const msg = e?.text || e?.message || 'Unknown error';
+    showEmailStatus(`❌ Error: ${msg}`, 'error');
     sendBtn.disabled = false;
     sendBtn.textContent = 'Retry ✉️';
   }
@@ -582,6 +635,15 @@ function restartBooth() {
   stopStream('main');
   stopStream('setup');
   stopStream('retake');
+
+  // Full email UI reset so next session starts clean
+  const sendBtn = document.getElementById('sendEmailBtn');
+  if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send ✉️'; }
+  const emailInput = document.getElementById('emailInput');
+  if (emailInput) emailInput.value = '';
+  const statusBox = document.getElementById('emailStatusBox');
+  if (statusBox) { statusBox.style.display = 'none'; statusBox.textContent = ''; statusBox.className = 'email-status-box'; }
+
   goPhase('welcome');
 }
 
