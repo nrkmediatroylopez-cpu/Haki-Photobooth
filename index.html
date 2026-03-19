@@ -23,26 +23,18 @@
   <!-- ═══ PHASE: WELCOME ═══ -->
   <div class="phase active" id="phase-welcome">
     <div class="welcome-card">
-      <div class="totoro-hero">
-        <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="60" cy="98" rx="45" ry="40" fill="#6b7c6e"/>
-          <ellipse cx="60" cy="106" rx="27" ry="27" fill="#c8d5bc"/>
-          <circle cx="52" cy="102" r="3.5" fill="#6b7c6e"/><circle cx="60" cy="110" r="3.5" fill="#6b7c6e"/><circle cx="68" cy="102" r="3.5" fill="#6b7c6e"/>
-          <ellipse cx="60" cy="52" rx="38" ry="36" fill="#6b7c6e"/>
-          <ellipse cx="26" cy="22" rx="10" ry="16" fill="#6b7c6e" transform="rotate(-18 26 22)"/>
-          <ellipse cx="94" cy="22" rx="10" ry="16" fill="#6b7c6e" transform="rotate(18 94 22)"/>
-          <ellipse cx="47" cy="50" rx="10" ry="12" fill="white"/><ellipse cx="73" cy="50" rx="10" ry="12" fill="white"/>
-          <circle cx="49" cy="52" r="6" fill="#1a1a2e"/><circle cx="75" cy="52" r="6" fill="#1a1a2e"/>
-          <circle cx="51" cy="49" r="2.5" fill="white"/><circle cx="77" cy="49" r="2.5" fill="white"/>
-          <ellipse cx="60" cy="63" rx="4.5" ry="3" fill="#4a5a4d"/>
-          <line x1="28" y1="64" x2="52" y2="62" stroke="#4a5a4d" stroke-width="1.5"/>
-          <line x1="28" y1="68" x2="52" y2="66" stroke="#4a5a4d" stroke-width="1.5"/>
-          <line x1="68" y1="62" x2="92" y2="64" stroke="#4a5a4d" stroke-width="1.5"/>
-          <line x1="68" y1="66" x2="92" y2="68" stroke="#4a5a4d" stroke-width="1.5"/>
-        </svg>
+      <!-- Theme switcher -->
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-theme="totoro" onclick="applyTheme('totoro')">🌿 Totoro</button>
+        <button class="theme-btn" data-theme="friends" onclick="applyTheme('friends')">☕ Friends</button>
       </div>
-      <h1 class="welcome-title">Totoro Photobooth</h1>
-      <p class="welcome-sub">Capture your magical forest moment ✨</p>
+
+      <!-- Dynamic hero area — swapped by applyTheme() -->
+      <div id="themeHeroArea">
+        <div class="totoro-hero"></div>
+        <h1 class="welcome-title">Totoro Photobooth</h1>
+        <p class="welcome-sub">Capture your magical forest moment ✨</p>
+      </div>
 
       <div class="section-label">Choose your strip layout</div>
       <div class="layout-grid">
@@ -215,6 +207,25 @@
       </div>
 
       <div class="email-thumb-row" id="emailThumbRow"></div>
+
+      <!-- Quick EmailJS config — shown only when not yet configured -->
+      <div id="quickConfigPanel" class="quick-config-panel" style="display:none">
+        <div class="qc-title">⚙️ One-time EmailJS Setup</div>
+        <p class="qc-desc">Get your free credentials at <a href="https://emailjs.com" target="_blank">emailjs.com</a> — connect Gmail, fill in below.</p>
+        <div class="form-group">
+          <label class="form-label">Service ID <span class="qc-hint">e.g. service_abc123</span></label>
+          <input type="text" id="qcServiceId" class="styled-input" placeholder="service_xxxxxxx"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Template ID <span class="qc-hint">e.g. template_xyz789</span></label>
+          <input type="text" id="qcTemplateId" class="styled-input" placeholder="template_xxxxxxx"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Public Key <span class="qc-hint">Account → General</span></label>
+          <input type="text" id="qcPublicKey" class="styled-input" placeholder="xxxxxxxxxxxxxxxxx"/>
+        </div>
+        <button class="btn-secondary" onclick="saveQuickConfig()" style="width:100%">💾 Save & Continue</button>
+      </div>
 
       <div class="form-group">
         <label class="form-label">Your Email Address</label>
