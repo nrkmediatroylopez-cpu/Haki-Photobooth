@@ -129,6 +129,8 @@ let state = {
   filter:        'none',
   facingMode:    'user',
   deviceId:      null,
+  flashMode:     'off',    // 'off' | 'on' | 'auto'
+  torchActive:   false,
   stream:        null,
   setupStream:   null,
   retakeStream:  null,
@@ -203,6 +205,84 @@ function onCameraChange() {
   startCameraOnElement('setupVideo', 'setup');
 }
 
+// ── FLASH / TORCH ─────────────────────────────────────
+function setFlash(mode, btn) {
+  state.flashMode = mode;
+  document.querySelectorAll('#btnFlashOff,#btnFlashOn,#btnFlashAuto').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (mode === 'on') {
+    applyTorch(true);
+  } else {
+    applyTorch(false);
+  }
+}
+
+async function applyTorch(enable) {
+  const note = document.getElementById('flashNote');
+  // Try to apply torch to the current stream's video track
+  const s = state.setupStream || state.mainStream;
+  if (!s) return;
+  const track = s.getVideoTracks()[0];
+  if (!track) return;
+
+  const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+  if (!capabilities.torch) {
+    // Device doesn't support torch
+    if (enable && note) note.style.display = 'block';
+    return;
+  }
+  if (note) note.style.display = 'none';
+
+  try {
+    await track.applyConstraints({ advanced: [{ torch: enable }] });
+    state.torchActive = enable;
+  } catch(e) {
+    console.warn('Torch failed:', e);
+    if (note) note.style.display = 'block';
+  }
+}
+
+// Apply flash mode before capture (screen flash for front cam,
+// torch for back cam, or screen flash for auto)
+async function activateFlashForCapture() {
+  if (state.flashMode === 'off') return;
+
+  if (state.flashMode === 'on') {
+    if (state.facingMode === 'environment') {
+      // Back cam: use torch
+      await applyTorch(true);
+    } else {
+      // Front cam: screen flash
+      await screenFlash();
+    }
+  } else if (state.flashMode === 'auto') {
+    // Auto: always screen flash (can't detect light level)
+    await screenFlash();
+  }
+}
+
+async function deactivateFlashAfterCapture() {
+  if (state.flashMode === 'on' && state.facingMode === 'environment') {
+    await applyTorch(false);
+  }
+}
+
+function screenFlash() {
+  return new Promise(res => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:white;z-index:9999;opacity:0;transition:opacity .08s ease;pointer-events:none';
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.remove(); res(); }, 200);
+      }, 120);
+    });
+  });
+}
+
 async function enumerateCameras() {
   try {
     // Need a quick stream first so browser reveals device labels
@@ -269,7 +349,15 @@ async function startCameraOnElement(videoId, streamKey) {
 
 function stopStream(key) {
   const s = state[key + 'Stream'];
-  if (s) { s.getTracks().forEach(t => t.stop()); state[key + 'Stream'] = null; }
+  if (s) {
+    // Turn off torch before stopping stream
+    const track = s.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().torch) {
+      track.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
+    }
+    s.getTracks().forEach(t => t.stop());
+    state[key + 'Stream'] = null;
+  }
 }
 
 // ── CAMERA SETUP ──────────────────────────────────────
@@ -281,6 +369,10 @@ async function initCameraSetup() {
   const facingSection = document.getElementById('cameraFacingSection');
   if (sourceSection) sourceSection.style.display = mobile ? 'none' : 'block';
   if (facingSection) facingSection.style.display = mobile ? 'block' : 'none';
+
+  // Show flash section on mobile only
+  const flashSection = document.getElementById('cameraFlashSection');
+  if (flashSection) flashSection.style.display = mobile ? 'block' : 'none';
 
   if (!mobile) {
     // Laptop: enumerate cameras and populate dropdown
@@ -385,7 +477,14 @@ async function countdown3AndCapture() {
     recorder.stop();
   }
 
+  // Activate flash/torch before capture (mobile only)
+  if (isMobileDevice()) await activateFlashForCapture();
+
   captureFromVideo('shootVideo', 'shootFlash', 'shootCanvas');
+
+  // Deactivate torch after capture
+  if (isMobileDevice()) await deactivateFlashAfterCapture();
+
   await sleep(500);
   renderStripMini();
   state.photoIndex++;
