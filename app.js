@@ -544,15 +544,20 @@ async function initEmail() {
     miniCanvas.style.cssText = 'width:140px;height:auto;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.3)';
   }
 
-  // Quick config panel
+  // Quick config panel — use per-theme credentials
+  const themeCreds = getEmailConfigForTheme(currentTheme);
   const qc = document.getElementById('quickConfigPanel');
+  const qcTitle = document.getElementById('quickConfigTitle');
+  if (qcTitle) qcTitle.textContent = currentTheme === 'friends'
+    ? '⚙️ Friends Theme — EmailJS Setup'
+    : '⚙️ Totoro Theme — EmailJS Setup';
   if (qc) {
-    const ok = cfg.ejsServiceId && cfg.ejsTemplateId && cfg.ejsPublicKey;
+    const ok = themeCreds.ejsServiceId && themeCreds.ejsTemplateId && themeCreds.ejsPublicKey;
     qc.style.display = ok ? 'none' : 'block';
     if (!ok) {
-      setInputVal('qcServiceId',  cfg.ejsServiceId  || '');
-      setInputVal('qcTemplateId', cfg.ejsTemplateId || '');
-      setInputVal('qcPublicKey',  cfg.ejsPublicKey  || '');
+      setInputVal('qcServiceId',  themeCreds.ejsServiceId  || '');
+      setInputVal('qcTemplateId', themeCreds.ejsTemplateId || '');
+      setInputVal('qcPublicKey',  themeCreds.ejsPublicKey  || '');
     }
   }
 }
@@ -587,6 +592,14 @@ async function sendEmail() {
 
   window.BOOTH_CONFIG = loadConfig();
   const cfg = window.BOOTH_CONFIG;
+
+  // ── Use per-theme email credentials ──────────────────
+  const themeCreds = getEmailConfigForTheme(currentTheme);
+  cfg.ejsServiceId  = themeCreds.ejsServiceId  || cfg.ejsServiceId;
+  cfg.ejsTemplateId = themeCreds.ejsTemplateId || cfg.ejsTemplateId;
+  cfg.ejsPublicKey  = themeCreds.ejsPublicKey  || cfg.ejsPublicKey;
+  cfg.ejsFromName   = themeCreds.ejsFromName   || cfg.ejsFromName;
+  cfg.ejsSubject    = themeCreds.ejsSubject    || cfg.ejsSubject;
 
   const emailAddr = document.getElementById('emailInput').value.trim();
   if (!emailAddr || !isValidEmail(emailAddr)) {
