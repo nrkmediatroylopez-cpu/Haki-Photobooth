@@ -415,3 +415,89 @@ body::before {
 .btn-ghost-center:hover { color:var(--forest); }
 .btn-ghost { background:transparent;border:none;color:var(--dust);cursor:pointer;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:700;padding:.3rem .5rem;transition:color .18s; }
 .btn-ghost:hover { color:#b05050; }
+
+/* ── QUICK CONFIG PANEL ── */
+.quick-config-panel {
+  background: var(--parchment);
+  border: 2px solid var(--accent-lt);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.qc-title {
+  font-family: 'Yomogi', cursive;
+  font-size: 1rem;
+  color: var(--forest);
+  margin-bottom: .3rem;
+}
+.qc-desc {
+  font-size: .8rem;
+  color: var(--dust);
+  font-weight: 600;
+  margin-bottom: .8rem;
+  line-height: 1.5;
+}
+.qc-desc a { color: var(--forest-mid); font-weight: 700; }
+.qc-hint {
+  font-weight: 400;
+  font-size: .72rem;
+  color: var(--dust);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── THEME SWITCHER ── */
+.theme-switcher {
+  display: flex;
+  gap: .5rem;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+.theme-btn {
+  padding: .45rem 1.1rem;
+  border: 2px solid var(--sage-light);
+  background: var(--cream);
+  border-radius: 60px;
+  font-family: 'Nunito', sans-serif;
+  font-size: .85rem;
+  font-weight: 800;
+  color: var(--forest);
+  cursor: pointer;
+  transition: all .2s;
+}
+.theme-btn.active {
+  background: var(--theme-btn-bg, var(--forest));
+  border-color: var(--theme-btn-bg, var(--forest));
+  color: var(--theme-btn-color, var(--cream));
+  box-shadow: 0 3px 12px rgba(0,0,0,.2);
+}
+.theme-btn:not(.active):hover {
+  background: var(--belly);
+}
+
+/* Friends theme overrides */
+body.theme-friends {
+  --forest:      #c0392b;
+  --forest-mid:  #e74c3c;
+  --forest-dark: #922b21;
+  --sage:        #e67e22;
+  --sage-light:  #f0c080;
+  --sage-pale:   #fdebd0;
+  --cream:       #fff8f0;
+  --parchment:   #fef0dc;
+  --warm-white:  #fffaf5;
+  --accent:      #e67e22;
+  --accent-lt:   #f5cba7;
+  --belly:       #fdebd0;
+  --shadow:      rgba(192,57,43,.18);
+  --shadow-deep: rgba(150,40,30,.38);
+}
+body.theme-friends .welcome-title { font-family: 'Georgia', serif; }
+body.theme-friends .btn-primary   { background: #c0392b !important; }
+body.theme-friends .tab.active    { background: #c0392b; }
+body.theme-friends .filter-pill.active,
+body.theme-friends .filter-btn.active,
+body.theme-friends .layout-card.active { background: #c0392b; border-color: #c0392b; }
+body.theme-friends .seq-dot.done  { background: #e67e22; border-color: #e67e22; }
+body.theme-friends .vf-corner     { border-color: #f0c080; }
+body.theme-friends .admin-link    { background: #c0392b; }
