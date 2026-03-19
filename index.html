@@ -86,6 +86,17 @@
         </div>
       </div>
 
+      <!-- Flash — shown only on mobile -->
+      <div class="setup-section" id="cameraFlashSection" style="display:none">
+        <div class="setup-label">Flash / Torch</div>
+        <div class="toggle-row">
+          <button class="toggle-btn active" id="btnFlashOff" onclick="setFlash('off',this)">🔕 Off</button>
+          <button class="toggle-btn" id="btnFlashOn"  onclick="setFlash('on',this)">⚡ On</button>
+          <button class="toggle-btn" id="btnFlashAuto" onclick="setFlash('auto',this)">✨ Auto</button>
+        </div>
+        <div class="flash-note" id="flashNote" style="display:none">⚠️ Torch not supported on this device</div>
+      </div>
+
       <div class="setup-viewfinder" id="setupViewfinder">
         <video id="setupVideo" autoplay playsinline muted></video>
         <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
