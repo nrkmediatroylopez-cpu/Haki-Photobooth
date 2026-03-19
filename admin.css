@@ -162,3 +162,56 @@ body.admin-body::before { display:none; }
   .admin-back-link { margin-top:0; }
   .admin-main { padding:1rem; }
 }
+
+/* ── ADMIN THEME SWITCH ── */
+.admin-theme-switch {
+  background: rgba(255,255,255,.06);
+  border-radius: 10px;
+  padding: .7rem .8rem;
+  margin-bottom: .5rem;
+}
+.admin-theme-switch .admin-label {
+  color: rgba(255,255,255,.45);
+  font-size: .68rem;
+  margin-bottom: .4rem;
+}
+.admin-theme-switch .toggle-btn {
+  font-size: .78rem;
+  padding: .4rem .6rem;
+  color: rgba(255,255,255,.6);
+  border-color: rgba(255,255,255,.15);
+  background: transparent;
+}
+.admin-theme-switch .toggle-btn.active {
+  background: rgba(255,255,255,.15);
+  color: white;
+  border-color: rgba(255,255,255,.35);
+}
+
+/* ── THEME BANNER ── */
+.theme-banner {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .6rem 1rem;
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 800;
+  margin-bottom: 1.4rem;
+  letter-spacing: .04em;
+}
+.banner-totoro  { background: #d4e8d0; color: #2a3f2c; }
+.banner-friends { background: #fdebd0; color: #922b21; }
+
+/* ── THEME EMAIL SECTIONS ── */
+.theme-email-section { margin-bottom: .5rem; }
+.theme-email-header {
+  font-size: .88rem;
+  font-weight: 800;
+  padding: .5rem .8rem;
+  border-radius: 8px;
+  margin-bottom: .8rem;
+  letter-spacing: .04em;
+}
+.totoro-header  { background: #d4e8d0; color: #2a3f2c; }
+.friends-header { background: #fdebd0; color: #922b21; }
