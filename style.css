@@ -501,3 +501,15 @@ body.theme-friends .layout-card.active { background: #c0392b; border-color: #c03
 body.theme-friends .seq-dot.done  { background: #e67e22; border-color: #e67e22; }
 body.theme-friends .vf-corner     { border-color: #f0c080; }
 body.theme-friends .admin-link    { background: #c0392b; }
+
+/* ── FLASH NOTE ── */
+.flash-note {
+  margin-top: .5rem;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding: .4rem .7rem;
+  background: rgba(193,119,59,.1);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
