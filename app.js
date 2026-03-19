@@ -480,10 +480,7 @@ async function previewFilter(name, btn) {
 async function drawFilterPreview(filter) {
   const canvas = document.getElementById('filterCanvas');
   if (!canvas) return;
-  const cfg = Object.assign({}, window.BOOTH_CONFIG || loadConfig());
-  const t = THEMES[currentTheme];
-  cfg.bgColor = t.stripBg; cfg.brandName = t.brandName; cfg.brandColor = t.stripColor;
-  await renderStrip(state.photos, state.layout, filter, cfg, canvas);
+  await renderStrip(state.photos, state.layout, filter, getThemedConfig(), canvas);
   canvas.style.width = '100%'; canvas.style.height = 'auto'; canvas.style.borderRadius = '8px';
 }
 
@@ -503,23 +500,40 @@ async function initFinalize() {
 }
 
 function getThemedConfig() {
-  // Load the correct per-theme admin config from localStorage
+  const t = THEMES[currentTheme];
+
+  // Step 1 — start with base defaults for this theme
+  const themeDefaults = {
+    bgType:    'color',
+    bgColor:   t.stripBg,
+    bgImage:   null,
+    bgFit:     'cover',
+    bgOpacity: 1,
+    gradStart: t.stripBg,
+    gradEnd:   '#c8d5bc',
+    gradDir:   'to bottom',
+    stripPad:  12,
+    photoGap:  8,
+    borderRad: 4,
+    brandName:    t.brandName,
+    brandTagline: '',
+    brandColor:   t.stripColor,
+    brandFont:    16,
+    showDate:     true,
+    logoImage:    null,
+  };
+
+  // Step 2 — merge saved admin config for this specific theme on top
   const themeKey = currentTheme === 'friends' ? 'friends_config' : 'totoro_config';
-  let cfg;
   try {
     const raw = localStorage.getItem(themeKey);
-    cfg = raw ? Object.assign({}, loadConfig(), JSON.parse(raw)) : Object.assign({}, loadConfig());
-  } catch(e) {
-    cfg = Object.assign({}, loadConfig());
-  }
+    if (raw) {
+      const saved = JSON.parse(raw);
+      Object.assign(themeDefaults, saved);
+    }
+  } catch(e) {}
 
-  // Apply theme identity defaults (only if not overridden in admin)
-  const t = THEMES[currentTheme];
-  if (!cfg.bgColor || cfg.bgColor === '#4e6e50') cfg.bgColor = t.stripBg;
-  if (!cfg.brandName || cfg.brandName === '🌿 Totoro Booth') cfg.brandName = t.brandName;
-  if (!cfg.brandColor) cfg.brandColor = t.stripColor;
-
-  return cfg;
+  return themeDefaults;
 }
 
 async function downloadFinalStrip() {
