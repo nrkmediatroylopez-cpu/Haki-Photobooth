@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Totoro Photobooth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Yomogi&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body class="admin-body">
+
+<div class="admin-sidebar">
+  <div class="admin-logo">
+    <span class="admin-logo-icon">🌿</span>
+    <div>
+      <div class="admin-logo-title">Totoro Booth</div>
+      <div class="admin-logo-sub">Admin Panel</div>
+    </div>
+  </div>
+  <nav class="admin-nav">
+    <button class="admin-nav-btn active" onclick="adminTab('background')">🖼 Background</button>
+    <button class="admin-nav-btn" onclick="adminTab('branding')">✏️ Branding</button>
+    <button class="admin-nav-btn" onclick="adminTab('email')">📧 Email Config</button>
+    <button class="admin-nav-btn" onclick="adminTab('templates')">🎞 Strip Templates</button>
+    <button class="admin-nav-btn" onclick="adminTab('sessions')">📋 Sessions</button>
+  </nav>
+  <a href="index.html" class="admin-back-link">← Back to Booth</a>
+</div>
+
+<div class="admin-main">
+
+  <!-- ═══ TAB: BACKGROUND ═══ -->
+  <div class="admin-tab active" id="admin-background">
+    <h2 class="admin-section-title">🖼 Strip Background Editor</h2>
+    <p class="admin-desc">Upload a background image for the photo strip, or use a color/gradient. Changes reflect in real-time on the preview.</p>
+
+    <div class="admin-two-col">
+      <div class="admin-controls-col">
+
+        <div class="admin-field-group">
+          <label class="admin-label">Background Type</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="setBgType('color',this)">🎨 Color</button>
+            <button class="toggle-btn" onclick="setBgType('gradient',this)">🌈 Gradient</button>
+            <button class="toggle-btn" onclick="setBgType('image',this)">🖼 Image</button>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div class="admin-field-group" id="bgColorGroup">
+          <label class="admin-label">Background Color</label>
+          <div class="color-row">
+            <input type="color" id="bgColorPicker" value="#4e6e50" oninput="updateBgColor()" class="color-picker"/>
+            <input type="text" id="bgColorHex" value="#4e6e50" class="styled-input hex-input" oninput="syncColorFromHex()"/>
+          </div>
+          <div class="preset-colors">
+            <button class="color-swatch" style="background:#4e6e50" onclick="setPresetColor('#4e6e50')"></button>
+            <button class="color-swatch" style="background:#3d5a40" onclick="setPresetColor('#3d5a40')"></button>
+            <button class="color-swatch" style="background:#1a2b1c" onclick="setPresetColor('#1a2b1c')"></button>
+            <button class="color-swatch" style="background:#c8d5bc" onclick="setPresetColor('#c8d5bc')"></button>
+            <button class="color-swatch" style="background:#f5f0e8" onclick="setPresetColor('#f5f0e8')"></button>
+            <button class="color-swatch" style="background:#ede5d0" onclick="setPresetColor('#ede5d0')"></button>
+            <button class="color-swatch" style="background:#c1773b" onclick="setPresetColor('#c1773b')"></button>
+            <button class="color-swatch" style="background:#7aacbf" onclick="setPresetColor('#7aacbf')"></button>
+            <button class="color-swatch" style="background:#2c2c2c" onclick="setPresetColor('#2c2c2c')"></button>
+            <button class="color-swatch" style="background:#fff" onclick="setPresetColor('#ffffff')" style="border:2px solid #ccc"></button>
+          </div>
+        </div>
+
+        <!-- Gradient -->
+        <div class="admin-field-group" id="bgGradientGroup" style="display:none">
+          <label class="admin-label">Gradient Start</label>
+          <input type="color" id="gradStart" value="#3d5a40" oninput="updateGradient()" class="color-picker"/>
+          <label class="admin-label" style="margin-top:.6rem">Gradient End</label>
+          <input type="color" id="gradEnd" value="#c8d5bc" oninput="updateGradient()" class="color-picker"/>
+          <label class="admin-label" style="margin-top:.6rem">Direction</label>
+          <select id="gradDir" class="styled-select" onchange="updateGradient()">
+            <option value="to bottom">↓ Top to Bottom</option>
+            <option value="to right">→ Left to Right</option>
+            <option value="135deg">↘ Diagonal</option>
+            <option value="to top">↑ Bottom to Top</option>
+          </select>
+        </div>
+
+        <!-- Image -->
+        <div class="admin-field-group" id="bgImageGroup" style="display:none">
+          <label class="admin-label">Upload Image</label>
+          <div class="file-drop" id="bgFileDrop" onclick="document.getElementById('bgFileInput').click()">
+            <div class="file-drop-icon">🖼</div>
+            <div class="file-drop-text">Click or drag & drop</div>
+            <div class="file-drop-sub">PNG, JPG, WEBP</div>
+            <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="onBgImageUpload(event)"/>
+          </div>
+          <div id="bgImagePreviewRow" style="display:none;margin-top:.5rem">
+            <img id="bgImageThumb" style="width:80px;height:50px;object-fit:cover;border-radius:6px;"/>
+            <button class="btn-ghost" onclick="clearBgImage()" style="margin-left:.5rem">✕ Clear</button>
+          </div>
+          <div class="admin-label" style="margin-top:.6rem">Fit Mode</div>
+          <select id="bgFitMode" class="styled-select" onchange="updatePreview()">
+            <option value="cover">Cover (fill)</option>
+            <option value="contain">Contain (letterbox)</option>
+            <option value="repeat">Tile / Repeat</option>
+          </select>
+          <div class="admin-label" style="margin-top:.6rem">Opacity: <span id="bgOpacityVal">100</span>%</div>
+          <input type="range" id="bgOpacity" min="10" max="100" value="100" oninput="updateBgOpacity()" class="range-input"/>
+        </div>
+
+        <!-- Strip padding/border -->
+        <div class="admin-field-group">
+          <label class="admin-label">Strip Padding: <span id="stripPadVal">12</span>px</label>
+          <input type="range" id="stripPad" min="4" max="40" value="12" oninput="updateStripPad()" class="range-input"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Photo Gap: <span id="photoGapVal">8</span>px</label>
+          <input type="range" id="photoGap" min="2" max="30" value="8" oninput="updatePhotoGap()" class="range-input"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Border Radius: <span id="borderRadVal">4</span>px</label>
+          <input type="range" id="borderRad" min="0" max="20" value="4" oninput="updateBorderRad()" class="range-input"/>
+        </div>
+
+        <button class="btn-primary" onclick="saveAdminConfig()">💾 Save Changes</button>
+      </div>
+
+      <!-- LIVE PREVIEW -->
+      <div class="admin-preview-col">
+        <div class="admin-preview-label">Live Strip Preview</div>
+        <div class="admin-strip-preview" id="adminStripPreview">
+          <canvas id="adminPreviewCanvas"></canvas>
+        </div>
+        <div class="admin-preview-note">Preview uses sample photos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: BRANDING ═══ -->
+  <div class="admin-tab" id="admin-branding">
+    <h2 class="admin-section-title">✏️ Strip Branding</h2>
+
+    <div class="admin-two-col">
+      <div class="admin-controls-col">
+        <div class="admin-field-group">
+          <label class="admin-label">Brand Name</label>
+          <input type="text" id="brandName" class="styled-input" value="🌿 Totoro Booth" oninput="updatePreview()"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Tagline / Sub-text</label>
+          <input type="text" id="brandTagline" class="styled-input" value="" placeholder="e.g. Forest Magic 2025" oninput="updatePreview()"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Show Date on Strip</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="setBrandDate(true,this)">✓ Yes</button>
+            <button class="toggle-btn" onclick="setBrandDate(false,this)">✗ No</button>
+          </div>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Brand Text Color</label>
+          <input type="color" id="brandColor" value="#ffffff" oninput="updatePreview()" class="color-picker"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Brand Font Size: <span id="brandFontVal">16</span>px</label>
+          <input type="range" id="brandFont" min="10" max="32" value="16" oninput="updateBrandFont()" class="range-input"/>
+        </div>
+        <div class="admin-field-group">
+          <label class="admin-label">Upload Logo (optional)</label>
+          <div class="file-drop" onclick="document.getElementById('logoInput').click()" style="padding:.8rem">
+            <div class="file-drop-icon" style="font-size:1.2rem">🖼</div>
+            <div class="file-drop-text" style="font-size:.8rem">Upload logo PNG</div>
+            <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="onLogoUpload(event)"/>
+          </div>
+          <div id="logoPreviewRow" style="display:none;margin-top:.5rem">
+            <img id="logoThumb" style="height:40px;object-fit:contain;"/>
+            <button class="btn-ghost" onclick="clearLogo()">✕</button>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveAdminConfig()">💾 Save</button>
+      </div>
+
+      <div class="admin-preview-col">
+        <div class="admin-preview-label">Preview</div>
+        <div class="admin-strip-preview" id="adminStripPreview2">
+          <canvas id="adminPreviewCanvas2"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: EMAIL CONFIG ═══ -->
+  <div class="admin-tab" id="admin-email">
+    <h2 class="admin-section-title">📧 Email Configuration</h2>
+    <p class="admin-desc">Configure EmailJS to send strips automatically. <a href="https://www.emailjs.com" target="_blank" class="admin-link-text">Get a free account at emailjs.com</a></p>
+
+    <div class="admin-form-single">
+      <div class="admin-field-group">
+        <label class="admin-label">EmailJS Service ID</label>
+        <input type="text" id="ejsServiceId" class="styled-input" placeholder="service_xxxxxxx"/>
+      </div>
+      <div class="admin-field-group">
+        <label class="admin-label">EmailJS Template ID</label>
+        <input type="text" id="ejsTemplateId" class="styled-input" placeholder="template_xxxxxxx"/>
+      </div>
+      <div class="admin-field-group">
+        <label class="admin-label">EmailJS Public Key</label>
+        <input type="text" id="ejsPublicKey" class="styled-input" placeholder="xxxxxxxxxxxxxxxxx"/>
+      </div>
+      <div class="admin-field-group">
+        <label class="admin-label">From Name (shown to recipient)</label>
+        <input type="text" id="ejsFromName" class="styled-input" value="Totoro Photobooth" placeholder="Totoro Photobooth"/>
+      </div>
+      <div class="admin-field-group">
+        <label class="admin-label">Email Subject</label>
+        <input type="text" id="ejsSubject" class="styled-input" value="Your Totoro Booth Memories 🌿" placeholder="Your Totoro Booth Memories"/>
+      </div>
+
+      <div class="admin-info-box">
+        <strong>📋 EmailJS Template Variables</strong><br>
+        Use these in your EmailJS template:<br>
+        <code>{{to_email}}</code> — recipient email<br>
+        <code>{{from_name}}</code> — booth name<br>
+        <code>{{subject}}</code> — email subject<br>
+        <code>{{message}}</code> — body text<br>
+        <code>{{strip_image}}</code> — base64 strip image<br>
+        <br>
+        <strong>⚠️ Note:</strong> Free EmailJS sends attachments as links. For file attachments, upgrade to a paid plan or use a backend server (see README).
+      </div>
+
+      <div class="admin-field-group">
+        <label class="admin-label">Test Email</label>
+        <div style="display:flex;gap:.5rem">
+          <input type="email" id="testEmailAddr" class="styled-input" placeholder="test@example.com" style="flex:1"/>
+          <button class="btn-secondary" onclick="sendTestEmail()">Send Test</button>
+        </div>
+        <div id="emailTestResult" style="margin-top:.5rem;font-size:.8rem;font-weight:700"></div>
+      </div>
+
+      <button class="btn-primary" onclick="saveEmailConfig()">💾 Save Email Config</button>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: TEMPLATES ═══ -->
+  <div class="admin-tab" id="admin-templates">
+    <h2 class="admin-section-title">🎞 Strip Templates</h2>
+    <p class="admin-desc">Save and load complete strip configurations as templates.</p>
+
+    <div class="template-grid" id="templateGrid">
+      <!-- populated by JS -->
+    </div>
+    <button class="btn-primary" onclick="saveCurrentAsTemplate()">+ Save Current as Template</button>
+  </div>
+
+  <!-- ═══ TAB: SESSIONS ═══ -->
+  <div class="admin-tab" id="admin-sessions">
+    <h2 class="admin-section-title">📋 Recent Sessions</h2>
+    <p class="admin-desc">Sessions are saved locally in your browser.</p>
+    <div id="sessionsList" class="sessions-list">
+      <div class="empty-sessions">No sessions recorded yet.</div>
+    </div>
+    <button class="btn-secondary" onclick="clearAllSessions()" style="margin-top:1rem">🗑 Clear All Sessions</button>
+  </div>
+
+</div><!-- .admin-main -->
+
+<script src="config.js"></script>
+<script src="strip-renderer.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

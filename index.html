@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Totoro Photobooth 🌿</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Yomogi&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="leaves-bg" aria-hidden="true">
+  <span class="leaf">🍃</span><span class="leaf">🌿</span><span class="leaf">🍃</span>
+  <span class="leaf">🌿</span><span class="leaf">🍃</span><span class="leaf">🌿</span>
+  <span class="leaf">🍃</span><span class="leaf">🌿</span>
+</div>
+
+<a href="admin.html" class="admin-link" title="Admin Panel">⚙️</a>
+
+<div id="app">
+
+  <!-- ═══ PHASE: WELCOME ═══ -->
+  <div class="phase active" id="phase-welcome">
+    <div class="welcome-card">
+      <div class="totoro-hero">
+        <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="60" cy="98" rx="45" ry="40" fill="#6b7c6e"/>
+          <ellipse cx="60" cy="106" rx="27" ry="27" fill="#c8d5bc"/>
+          <circle cx="52" cy="102" r="3.5" fill="#6b7c6e"/><circle cx="60" cy="110" r="3.5" fill="#6b7c6e"/><circle cx="68" cy="102" r="3.5" fill="#6b7c6e"/>
+          <ellipse cx="60" cy="52" rx="38" ry="36" fill="#6b7c6e"/>
+          <ellipse cx="26" cy="22" rx="10" ry="16" fill="#6b7c6e" transform="rotate(-18 26 22)"/>
+          <ellipse cx="94" cy="22" rx="10" ry="16" fill="#6b7c6e" transform="rotate(18 94 22)"/>
+          <ellipse cx="47" cy="50" rx="10" ry="12" fill="white"/><ellipse cx="73" cy="50" rx="10" ry="12" fill="white"/>
+          <circle cx="49" cy="52" r="6" fill="#1a1a2e"/><circle cx="75" cy="52" r="6" fill="#1a1a2e"/>
+          <circle cx="51" cy="49" r="2.5" fill="white"/><circle cx="77" cy="49" r="2.5" fill="white"/>
+          <ellipse cx="60" cy="63" rx="4.5" ry="3" fill="#4a5a4d"/>
+          <line x1="28" y1="64" x2="52" y2="62" stroke="#4a5a4d" stroke-width="1.5"/>
+          <line x1="28" y1="68" x2="52" y2="66" stroke="#4a5a4d" stroke-width="1.5"/>
+          <line x1="68" y1="62" x2="92" y2="64" stroke="#4a5a4d" stroke-width="1.5"/>
+          <line x1="68" y1="66" x2="92" y2="68" stroke="#4a5a4d" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h1 class="welcome-title">Totoro Photobooth</h1>
+      <p class="welcome-sub">Capture your magical forest moment ✨</p>
+
+      <div class="section-label">Choose your strip layout</div>
+      <div class="layout-grid">
+        <button class="layout-card active" data-layout="2x4" onclick="selectLayout(this,'2x4')">
+          <div class="layout-preview lp-2x4"></div>
+          <span>2×4 Strip</span><small>Classic double</small>
+        </button>
+        <button class="layout-card" data-layout="1x4" onclick="selectLayout(this,'1x4')">
+          <div class="layout-preview lp-1x4"></div>
+          <span>1×4 Strip</span><small>Single column</small>
+        </button>
+        <button class="layout-card" data-layout="2x2" onclick="selectLayout(this,'2x2')">
+          <div class="layout-preview lp-2x2"></div>
+          <span>2×2 Grid</span><small>4-photo square</small>
+        </button>
+        <button class="layout-card" data-layout="1x3" onclick="selectLayout(this,'1x3')">
+          <div class="layout-preview lp-1x3"></div>
+          <span>1×3 Strip</span><small>3-photo classic</small>
+        </button>
+      </div>
+
+      <button class="btn-primary btn-xl" onclick="goPhase('camera-setup')">Let's Start 🌿</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: CAMERA SETUP ═══ -->
+  <div class="phase" id="phase-camera-setup">
+    <div class="phase-card">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('welcome')">← Back</button>
+        <h2 class="phase-title">📷 Camera Setup</h2>
+        <div class="phase-step">1 / 5</div>
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-label">Camera Source</div>
+        <select id="cameraSelect" class="styled-select" onchange="onCameraChange()">
+          <option value="">Detecting cameras…</option>
+        </select>
+      </div>
+
+      <div class="setup-section">
+        <div class="setup-label">Facing Mode</div>
+        <div class="toggle-row">
+          <button class="toggle-btn active" id="btnFront" onclick="setFacing('user',this)">🤳 Front / Selfie</button>
+          <button class="toggle-btn" id="btnBack" onclick="setFacing('environment',this)">📷 Back / Rear</button>
+        </div>
+      </div>
+
+      <div class="setup-viewfinder" id="setupViewfinder">
+        <video id="setupVideo" autoplay playsinline muted></video>
+        <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+        <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+        <div class="vf-label">Live Preview</div>
+      </div>
+
+      <button class="btn-primary" onclick="goPhase('shoot')">Looks Good — Start Shooting 📸</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: SHOOT ═══ -->
+  <div class="phase" id="phase-shoot">
+    <div class="phase-card phase-card--wide">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('camera-setup')">← Back</button>
+        <h2 class="phase-title">📸 Photo Session</h2>
+        <div class="phase-step">2 / 5</div>
+      </div>
+
+      <div class="shoot-layout">
+        <div class="shoot-left">
+          <div class="viewfinder-main" id="mainViewfinder">
+            <video id="shootVideo" autoplay playsinline muted></video>
+            <canvas id="shootCanvas" style="display:none"></canvas>
+            <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+            <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+            <div class="flash-overlay" id="shootFlash"></div>
+            <div class="countdown-bubble" id="shootCountdown"></div>
+            <div class="seq-overlay">
+              <div class="seq-dots-row" id="shootDots"></div>
+              <span class="seq-lbl" id="shootSeqLbl"></span>
+            </div>
+            <div class="replay-pill" id="replayPill" style="display:none">▶ 3s replay</div>
+          </div>
+          <div class="shoot-controls">
+            <button class="btn-secondary" id="retakeBtn" onclick="goPhase('retake')" style="display:none">🔁 Retake</button>
+            <button class="btn-primary btn-shoot" id="shootBtn" onclick="startShootSession()"><span>📸</span> Start</button>
+            <button class="btn-secondary" id="doneShootBtn" onclick="goPhase('filter')" style="display:none">Done →</button>
+          </div>
+          <p class="shoot-status" id="shootStatus">Press Start when ready!</p>
+        </div>
+
+        <div class="shoot-right">
+          <div class="strip-preview-label">Strip Preview</div>
+          <div class="strip-mini-wrap" id="stripMiniWrap"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: RETAKE ═══ -->
+  <div class="phase" id="phase-retake">
+    <div class="phase-card">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('shoot')">← Back</button>
+        <h2 class="phase-title">🔁 Retake a Photo</h2>
+        <div class="phase-step">2b</div>
+      </div>
+      <p class="retake-hint">Tap a photo slot to retake it</p>
+      <div class="retake-grid" id="retakeGrid"></div>
+      <button class="btn-primary" onclick="goPhase('filter')" style="margin-top:1rem">Continue with these →</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: FILTER ═══ -->
+  <div class="phase" id="phase-filter">
+    <div class="phase-card">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('shoot')">← Back</button>
+        <h2 class="phase-title">🎨 Choose a Filter</h2>
+        <div class="phase-step">3 / 5</div>
+      </div>
+
+      <div class="filter-strip-preview" id="filterStripPreview">
+        <canvas id="filterCanvas"></canvas>
+      </div>
+
+      <div class="filter-scroll">
+        <button class="filter-pill active" data-filter="none"     onclick="previewFilter('none',this)">🌿 Natural</button>
+        <button class="filter-pill"        data-filter="sepia"    onclick="previewFilter('sepia',this)">🍂 Vintage</button>
+        <button class="filter-pill"        data-filter="bw"       onclick="previewFilter('bw',this)">🌫 B&W</button>
+        <button class="filter-pill"        data-filter="warm"     onclick="previewFilter('warm',this)">🌅 Warm</button>
+        <button class="filter-pill"        data-filter="cool"     onclick="previewFilter('cool',this)">❄️ Cool</button>
+        <button class="filter-pill"        data-filter="dramatic" onclick="previewFilter('dramatic',this)">🎭 Drama</button>
+        <button class="filter-pill"        data-filter="fade"     onclick="previewFilter('fade',this)">🌸 Fade</button>
+      </div>
+
+      <button class="btn-primary" onclick="applyFilterAndNext()">Apply & Preview Strip →</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: FINALIZE ═══ -->
+  <div class="phase" id="phase-finalize">
+    <div class="phase-card">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('filter')">← Back</button>
+        <h2 class="phase-title">✨ Your Strip</h2>
+        <div class="phase-step">4 / 5</div>
+      </div>
+
+      <div class="finalize-strips" id="finalizeStrips"></div>
+      <canvas id="finalCanvas" style="display:none"></canvas>
+
+      <div class="finalize-actions">
+        <button class="btn-secondary" onclick="goPhase('retake')">🔁 Retake a Shot</button>
+        <button class="btn-download" onclick="downloadFinalStrip()">⬇️ Download</button>
+      </div>
+
+      <button class="btn-primary" style="margin-top:.8rem" onclick="goPhase('email')">Send to Email 📧</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: EMAIL ═══ -->
+  <div class="phase" id="phase-email">
+    <div class="phase-card">
+      <div class="phase-header">
+        <button class="btn-back" onclick="goPhase('finalize')">← Back</button>
+        <h2 class="phase-title">📧 Send Your Memories</h2>
+        <div class="phase-step">5 / 5</div>
+      </div>
+
+      <div class="email-thumb-row" id="emailThumbRow"></div>
+
+      <div class="form-group">
+        <label class="form-label">Your Email Address</label>
+        <input type="email" id="emailInput" class="styled-input" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What to include</label>
+        <div class="check-row">
+          <label class="check-item"><input type="checkbox" id="inclPhoto" checked/> 📸 Photo Strip</label>
+          <label class="check-item"><input type="checkbox" id="inclVideo" checked/> 🎥 Video Clips</label>
+        </div>
+      </div>
+
+      <div class="email-status-box" id="emailStatusBox" style="display:none"></div>
+
+      <button class="btn-primary" id="sendEmailBtn" onclick="sendEmail()">Send ✉️</button>
+      <button class="btn-ghost-center" onclick="goPhase('done')">Skip → Finish</button>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE: DONE ═══ -->
+  <div class="phase" id="phase-done">
+    <div class="done-card">
+      <div class="done-anim">🌿</div>
+      <h2 class="done-title">See you next time!</h2>
+      <p class="done-sub">Your magical moment is saved ✨</p>
+      <div class="done-strips" id="doneStrips"></div>
+      <div class="done-actions">
+        <button class="btn-download" onclick="downloadFinalStrip()">⬇️ Download Strip</button>
+      </div>
+      <button class="btn-primary" style="margin-top:1rem" onclick="restartBooth()">🌿 New Session</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<!-- ░░ RETAKE MODAL ░░ -->
+<div class="modal-overlay" id="retakeModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeRetakeModal()">✕</button>
+    <h3 class="modal-title">📸 Retake Photo <span id="retakePhotoNum"></span></h3>
+    <div class="modal-viewfinder">
+      <video id="retakeVideo" autoplay playsinline muted></video>
+      <div class="vf-corner tl"></div><div class="vf-corner tr"></div>
+      <div class="vf-corner bl"></div><div class="vf-corner br"></div>
+      <div class="countdown-bubble" id="retakeCountdown"></div>
+      <div class="flash-overlay" id="retakeFlash"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="triggerRetakeCountdown()">📸 Capture (3s timer)</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="strip-renderer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
