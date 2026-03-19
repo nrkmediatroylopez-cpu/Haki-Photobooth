@@ -494,10 +494,18 @@ async function sendEmail() {
   sendBtn.textContent = 'Sending…';
   showEmailStatus('📤 Sending your memories…', 'info');
 
-  // Get strip image as base64
-  const canvas = document.createElement('canvas');
-  await renderStrip(state.photos, state.layout, state.filter, cfg, canvas);
-  const stripBase64 = canvas.toDataURL('image/jpeg', 0.85);
+ const canvas = document.createElement('canvas');
+await renderStrip(state.photos, state.layout, state.filter, cfg, canvas);
+
+// Compress + shrink to fit EmailJS 50KB limit
+const smallCanvas = document.createElement('canvas');
+const maxW = 400;
+const scale = maxW / canvas.width;
+smallCanvas.width  = maxW;
+smallCanvas.height = Math.round(canvas.height * scale);
+const sctx = smallCanvas.getContext('2d');
+sctx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+const stripBase64 = smallCanvas.toDataURL('image/jpeg', 0.45);
 
   // Load emailjs
   await loadEmailJS();
