@@ -544,17 +544,18 @@ async function initEmail() {
     miniCanvas.style.cssText = 'width:140px;height:auto;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.3)';
   }
 
-  // Quick config panel — use per-theme credentials
+  // Quick config panel — only show if credentials are truly missing
   const themeCreds = getEmailConfigForTheme(currentTheme);
+  const configured = isEmailConfigured(currentTheme);
   const qc = document.getElementById('quickConfigPanel');
   const qcTitle = document.getElementById('quickConfigTitle');
   if (qcTitle) qcTitle.textContent = currentTheme === 'friends'
     ? '⚙️ Friends Theme — EmailJS Setup'
     : '⚙️ Totoro Theme — EmailJS Setup';
   if (qc) {
-    const ok = themeCreds.ejsServiceId && themeCreds.ejsTemplateId && themeCreds.ejsPublicKey;
-    qc.style.display = ok ? 'none' : 'block';
-    if (!ok) {
+    // Hide panel if hardcoded credentials exist
+    qc.style.display = configured ? 'none' : 'block';
+    if (!configured) {
       setInputVal('qcServiceId',  themeCreds.ejsServiceId  || '');
       setInputVal('qcTemplateId', themeCreds.ejsTemplateId || '');
       setInputVal('qcPublicKey',  themeCreds.ejsPublicKey  || '');
